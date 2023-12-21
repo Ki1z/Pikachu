@@ -55,3 +55,35 @@ payload1填入常见密码，重点是payload2，首先获取token
 密码为123456
 
 > <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/ZT7}[4MUTOMUFWD{%~HC]DD.png?raw=true">
+
+## CSRF
+
+### CSRF(get)
+
+根据提示，登录其中一个账号，这里我使用vince
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/]VUKEUW88B1D{DGBEHOEVNJ.png?raw=true">
+
+登陆进入后，发现是修改个人信息的页面
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/WW$6`8%LD25[M_@HHZ$[%]L.png?raw=true">
+
+点击修改信息，并进行抓包
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/6M~~06L4%{5]CMTU}]`STRA.png?raw=true">
+
+修改sex为male并放行，发现修改成功
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/2EQ{]%A[N4[((LY]}{$32~I.png?raw=true">
+
+直接构造CSRF攻击的payload
+
+```url
+http://127.0.0.1/pikachu/vul/csrf/csrfget/csrf_get_edit.php?sex=male&phonenum=U HAS BEEN HACKED&add=chain&email=vince%40pikachu.com&submit=submit
+```
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/$9561SMFA%@0(JBJP3[VN1I.png?raw=true">
+
+### CSRF(POST)
+
+本题使用allen，因为是POST，不能在url栏直接构造payload，我们需要构造一个恶意网页
