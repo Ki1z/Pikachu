@@ -204,6 +204,8 @@ http://127.0.0.1/pikachu/vul/csrf/csrfget/csrf_get_edit.php?sex=male&phonenum=U 
 
 > <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/N{3AJ()KB@N}OB5A`N18K`O.png?raw=true">
 
+*注： `mid(arg1, arg2, arg3)` ，mid函数可以截取一段文本中的内容，有三个参数，arg1是需要截取的文本内容，arg2是截取位置，从1开始，arg3是截取长度*
+
 ### delete注入
 
 有一个留言板，提交后可以删除
